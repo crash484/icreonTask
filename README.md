@@ -1,73 +1,87 @@
-# React + TypeScript + Vite
+# Icreon Task – Product Dashboard UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project is a React + TypeScript + Vite application that provides a product
+dashboard experience using the DummyJSON API. It includes UI components for
+listing products, searching, filtering, sorting, viewing details, and managing
+favorites with persistent storage.
 
-Currently, two official plugins are available:
+## What the app does
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Fetches product data from `https://dummyjson.com` on load.
+- Stores product data and UI filters in a global Zustand store.
+- Filters and sorts the product list based on search text, category, and price
+  sort order.
+- Renders product cards with pricing, discounts, and ratings.
+- Opens a detailed modal with an image gallery and full product information.
+- Manages a favorites list that persists to `localStorage`.
 
-## React Compiler
+## How it works (data flow)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. **Data Fetching**
+   - `src/services/api.ts` defines API helpers for products.
+   - `src/hooks/useProducts.ts` loads data and updates the product store.
+2. **State Management**
+   - `src/store/index.ts` uses Zustand to keep products, filters, and favorites.
+3. **Filtering & Sorting**
+   - `src/hooks/useFilteredProducts.ts` applies search text, category, and price
+     sort order to the product list.
+4. **UI Rendering**
+   - `src/components/Toolbar.tsx` controls search, category, and sort.
+   - `src/components/ProductCard.tsx` shows each product summary.
+   - `src/components/ProductModal.tsx` shows full product details.
+   - `src/components/FavortiesPanel.tsx` lists favorites and totals.
 
-## Expanding the ESLint configuration
+> Note: `src/App.tsx` currently contains the Vite starter UI. The product
+> dashboard components above are ready to be composed into `App.tsx`.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Project structure
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+src/
+  components/      UI components (cards, toolbar, modal, favorites)
+  hooks/           data fetching, filtering, and debounce hooks
+  services/        API calls to DummyJSON
+  store/           Zustand stores for products and favorites
+  types/           TypeScript types/interfaces
+  App.tsx          Application entry component
+  main.tsx         React DOM bootstrap
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Getting started
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Install dependencies (pnpm is recommended because a pnpm lockfile is included):
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+pnpm install
 ```
+
+Run the development server:
+
+```bash
+pnpm dev
+```
+
+Build for production:
+
+```bash
+pnpm build
+```
+
+Run linting:
+
+```bash
+pnpm lint
+```
+
+Preview the production build locally:
+
+```bash
+pnpm preview
+```
+
+## Tech stack
+
+- React 19 + TypeScript
+- Vite
+- Zustand (state + favorites persistence)
+- CSS (global styles in `src/index.css` and `src/App.css`)
