@@ -8,7 +8,7 @@ import { ProductCard } from './components/ProductCard';
 import { ProductModal } from './components/ProductModal';
 import { SkeletonCard } from './components/SkeletonCard';
 import { Toolbar } from './components/Toolbar';
-import { FavoritesPanel } from './components/FavortiesPanel';
+import { FavoritesPanel } from './components/FavoritesPanel';
 
 export default function App() {
   useProducts();
