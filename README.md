@@ -31,8 +31,6 @@ favorites with persistent storage.
    - `src/components/ProductModal.tsx` shows full product details.
    - `src/components/FavoritesPanel.tsx` lists favorites and totals.
 
-> Note: `src/App.tsx` currently contains the Vite starter UI. The product
-> dashboard components above are ready to be composed into `App.tsx`.
 
 ## Project structure
 
