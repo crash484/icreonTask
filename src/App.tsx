@@ -1,121 +1,145 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useMemo, useCallback } from 'react';
+import type { Product } from './types';
+import { useProductStore, useFavoritesStore } from './store';
+import { useProducts } from './hooks/useProducts';
+import { useDebounce } from './hooks/useDebounce';
+import { useFilteredProducts } from './hooks/useFilteredProducts';
+import { ProductCard } from './components/ProductCard';
+import { ProductModal } from './components/ProductModal';
+import { SkeletonCard } from './components/SkeletonCard';
+import { Toolbar } from './components/Toolbar';
+import { FavoritesPanel } from './components/FavortiesPanel';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  useProducts();
+
+  const {
+    products, loading, error,
+    searchQuery, setSearchQuery,
+    selectedCategory, sortOrder,
+    selectedProduct, setSelectedProduct,
+  } = useProductStore();
+
+  const { favorites } = useFavoritesStore();
+
+  const [rawSearch, setRawSearch]   = useState<string>('');
+  const [favOpen, setFavOpen]       = useState<boolean>(false);
+
+  const debouncedSearch = useDebounce<string>(rawSearch, 400);
+  useMemo(() => setSearchQuery(debouncedSearch), [debouncedSearch, setSearchQuery]);
+
+  const categories = useMemo<string[]>(
+    () => ['all', ...new Set(products.map((p) => p.category))],
+    [products]
+  );
+
+  const filteredProducts = useFilteredProducts({
+    products, searchQuery, selectedCategory, sortOrder,
+  });
+
+  const handleCardClick    = useCallback((p: Product) => setSelectedProduct(p), [setSelectedProduct]);
+  const handleClearFilters = useCallback(() => { setRawSearch(''); setSearchQuery(''); }, [setSearchQuery]);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="app">
+
+      {/* ── Header ── */}
+      <header className="header">
+        <div className="header-left">
+          <div className="logo">
+            <span className="logo-icon">M</span>
+            <span className="logo-text">Marketplace</span>
+          </div>
+          <div className="header-divider" />
+          <span className="header-sub">Product Explorer</span>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
+        <button className="btn-favorites" onClick={() => setFavOpen(true)}>
+          <span className="btn-fav-heart">♥</span>
+          <span className="btn-fav-label">Saved Items</span>
+          {favorites.length > 0 && (
+            <span className="fav-badge">{favorites.length}</span>
+          )}
         </button>
-      </section>
+      </header>
 
-      <div className="ticks"></div>
+      {/* ── Hero ── */}
+      <div className="hero">
+        <div className="hero-label">New Collection</div>
+        <h1 className="hero-title">
+          Discover <em>curated</em> products<br />for every taste
+        </h1>
+      </div>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      {/* ── Toolbar ── */}
+      <Toolbar rawSearch={rawSearch} setRawSearch={setRawSearch} categories={categories} />
+
+      {/* ── Stats bar ── */}
+      {!loading && !error && (
+        <div className="stats-bar">
+          <span className="stats-count">
+            {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
+          </span>
+          {(searchQuery || selectedCategory !== 'all') && (
+            <button className="clear-filters" onClick={handleClearFilters}>
+              Clear all filters
+            </button>
+          )}
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      )}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {/* ── Main ── */}
+      <main className="main">
+
+        {/* Error */}
+        {error && (
+          <div className="state-box error-state">
+            <div className="state-icon">!</div>
+            <h2>Something went wrong</h2>
+            <p>{error}</p>
+            <button className="state-btn" onClick={() => window.location.reload()}>
+              Try Again
+            </button>
+          </div>
+        )}
+
+        {/* Skeletons */}
+        {loading && !error && (
+          <div className="product-grid">
+            {Array.from({ length: 12 }, (_, i) => <SkeletonCard key={i} />)}
+          </div>
+        )}
+
+        {/* Empty */}
+        {!loading && !error && filteredProducts.length === 0 && (
+          <div className="state-box">
+            <div className="state-icon">∅</div>
+            <h2>No products found</h2>
+            <p>Try adjusting your search terms or filter criteria to see more results.</p>
+            <button className="state-btn" onClick={handleClearFilters}>
+              Clear Filters
+            </button>
+          </div>
+        )}
+
+        {/* Grid */}
+        {!loading && !error && filteredProducts.length > 0 && (
+          <div className="product-grid">
+            {filteredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} onClick={handleCardClick} />
+            ))}
+          </div>
+        )}
+
+      </main>
+
+      {/* ── Modal ── */}
+      {selectedProduct && (
+        <ProductModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+      )}
+
+      {/* ── Favorites panel ── */}
+      <FavoritesPanel open={favOpen} onClose={() => setFavOpen(false)} onProductClick={handleCardClick} />
+
+    </div>
+  );
 }
-
-export default App
